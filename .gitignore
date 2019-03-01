@@ -1,0 +1,9 @@
+# Ignore IntelliJ
+.idea
+
+# Ignore compiled files
+target
+
+# Ignore VIM files
+*.swp
+*~
