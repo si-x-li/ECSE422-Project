@@ -1,20 +1,20 @@
 package com.ecse422.project.Analyzer;
 
-import com.ecse422.project.Model.Node;
+import com.ecse422.project.Model.Edge;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-class MST {
+public class MST {
     // Number of nodes
     private int n;
 
     // Keeps track of which nodes have been used
     private boolean[] set;
 
-    // Keeps track of the list of nodes
-    private List<Node> nodes;
+    // Keeps track of the list of edges
+    private List<Edge> edges;
 
     /**
      * @param n            Number of nodes in the graph
@@ -23,7 +23,7 @@ class MST {
      * @param minimizeCost Minimizes graph based on cost or not
      */
     public MST(int n, int[][] cost, double[][] reliability, boolean minimizeCost) {
-        nodes = new ArrayList();
+        edges = new ArrayList();
         this.n = n;
         this.set = new boolean[n];
         int[][] costCopy = Arrays.stream(cost)
@@ -65,7 +65,7 @@ class MST {
 
         set[x] = true;
         set[y] = true;
-        nodes.add(new Node(x, y, cost[x][y], reliability[x][y]));
+        edges.add(new Edge(x, y, cost[x][y], reliability[x][y]));
     }
 
     /**
@@ -92,7 +92,7 @@ class MST {
 
         set[x] = true;
         set[y] = true;
-        nodes.add(new Node(x, y, cost[x][y], reliability[x][y]));
+        edges.add(new Edge(x, y, cost[x][y], reliability[x][y]));
     }
 
     /**
@@ -119,7 +119,7 @@ class MST {
 
         set[x] = true;
         set[y] = true;
-        nodes.add(new Node(x, y, cost[x][y], reliability[x][y]));
+        edges.add(new Edge(x, y, cost[x][y], reliability[x][y]));
     }
 
     /**
@@ -146,7 +146,7 @@ class MST {
 
         set[x] = true;
         set[y] = true;
-        nodes.add(new Node(x, y, cost[x][y], reliability[x][y]));
+        edges.add(new Edge(x, y, cost[x][y], reliability[x][y]));
     }
 
     /**
@@ -179,20 +179,20 @@ class MST {
     }
 
     /**
-     * Returns all nodes within the minimum spanning tree
+     * Returns all edges within the minimum spanning tree
      *
-     * @return A list of nodes
+     * @return A list of edges
      */
-    public List<Node> getNodes() {
-        return nodes;
+    public List<Edge> getEdges() {
+        return edges;
     }
 
     /**
      * Prints the minimum spanning tree
      */
     public void printGraph() {
-        for (Node node : nodes) {
-            System.out.println(node.toString());
+        for (Edge edge : edges) {
+            System.out.println(edge.toString());
         }
     }
 }

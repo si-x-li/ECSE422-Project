@@ -6,7 +6,7 @@ import com.ecse422.project.Reader.Reader;
 
 import java.util.Scanner;
 
-public class App {
+public class NetworkOptimizer {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
@@ -70,7 +70,9 @@ public class App {
                         "--------------------------------------------------------------------------------\n" +
                         "********************************************************************************\n" +
                         "--------------------------------------------------------------------------------");
-                Analyzer.analyze(model, reliability, cost);
+
+                // Optimize the graph
+                Analyzer.optimize(model, reliability, cost);
             } catch (IllegalArgumentException err) {
                 System.out.println("Critical exception: " + err.getLocalizedMessage() + "\n");
             }

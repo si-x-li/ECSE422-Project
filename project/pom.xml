@@ -52,7 +52,7 @@
             </execution>
           </executions>
           <configuration>
-            <mainClass>com.ecse422.project.App</mainClass>
+            <mainClass>com.ecse422.project.NetworkOptimizer</mainClass>
           </configuration>
         </plugin>
         <plugin>
