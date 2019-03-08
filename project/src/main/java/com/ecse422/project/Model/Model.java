@@ -60,11 +60,14 @@ public class Model {
             }
         }
 
+        // Initialize comple set of edges with reliability > 0
         count = 0;
         this.completeEdgeSet = new HashSet<>();
         for (int i = 0; i < numOfNodes; i++) {
             for (int j = i + 1; j < numOfNodes; j++) {
-                completeEdgeSet.add(new Edge(i, j, cost[count], reliability[count]));
+                if ( reliability[count] > 0){
+                    completeEdgeSet.add(new Edge(i, j, cost[count], reliability[count]));
+                }
                 count++;
             }
         }

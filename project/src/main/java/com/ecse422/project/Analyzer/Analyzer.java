@@ -17,6 +17,8 @@ public class Analyzer {
      */
     public static List<Edge> optimize(Model model, double targetReliability, int targetCost) {
         List<Edge> edges = new ArrayList();
+        Set<Edge> completeEdges = model.getCompleteEdgeSet();
+        Set<Edge> maximizedSet;
 
         if (targetReliability < 0) {
             // Maximize reliability subject to given cost
@@ -26,26 +28,49 @@ public class Analyzer {
 //            MST mst = new MST(model.getNumOfNodes(), model.getCost(), model.getReliability(), true);
 //            edges.addAll(mst.getEdges());
 
+            try {
+                maximizedSet = maximizeReliability(model.getNumOfNodes(),
+                        targetCost - model.getCheapestEdgeCost(), targetCost, completeEdges);
+                edges.addAll(maximizedSet);
+            } catch (Exception e){
+                System.out.println("There is no solution");
+            }
 
-            Set<Edge> completeEdges = model.getCompleteEdgeSet();
-            Set<Edge> maximizedSet = maximizeReliability(model.getNumOfNodes(),
-                    targetCost - model.getCheapestEdgeCost(), targetCost, completeEdges);
-            edges.addAll(maximizedSet);
 
         } else if (targetCost == 0) {
             // Reach target reliability
             // TODO reach target reliability
             System.out.println("REACH TARGET RELIABILITY");
 
-            MST mst = new MST(model.getNumOfNodes(), model.getCost(), model.getReliability(), false);
-            edges.addAll(mst.getEdges());
+//            MST mst = new MST(model.getNumOfNodes(), model.getCost(), model.getReliability(), false);
+//            edges.addAll(mst.getEdges());
+            try {
+                maximizedSet = maximizeReliability(model.getNumOfNodes(),
+                        targetCost - model.getCheapestEdgeCost(), Integer.MAX_VALUE, completeEdges);
+                edges.addAll(maximizedSet);
+            } catch (Exception e){
+                System.out.println("There is no solution");
+            }
+
         } else {
             // Reach target reliability subject to given cost
             // TODO reach target reliability subject to given cost
             System.out.println("REACH TARGET RELIABILITY SUBJECT TO COST");
 
-            MST mst = new MST(model.getNumOfNodes(), model.getCost(), model.getReliability(), true);
-            edges.addAll(mst.getEdges());
+//            MST mst = new MST(model.getNumOfNodes(), model.getCost(), model.getReliability(), true);
+//            edges.addAll(mst.getEdges());
+            try {
+                maximizedSet = maximizeReliability(model.getNumOfNodes(),
+                        targetCost - model.getCheapestEdgeCost(), targetCost, completeEdges);
+                edges.addAll(maximizedSet);
+            } catch (Exception e) {
+                System.out.println("There is no solution");
+            } // FIXME
+
+            if (computeReliability(model.getNumOfNodes(), edges) < targetReliability){
+                System.out.println("There is no solution");
+            }
+
         }
 
         System.out.println(computeReliability(model.getNumOfNodes(), edges));
@@ -56,7 +81,6 @@ public class Analyzer {
     }
 
     private static Set<Edge> maximizeReliability(int numOfNodes, int minCost, int maxCost, Set<Edge> edges){
-        // TODO handle the border cases of edges cost = 0 or edges reliability = 0
         double maximizedReliability = 0.;
         Set<Edge> maximizedEdgeSet = null;
         Set<Set<Edge>> combinations = Sets.powerSet(edges);
