@@ -17,13 +17,21 @@ public class Analyzer {
      */
     public static List<Edge> optimize(Model model, double targetReliability, int targetCost) {
         List<Edge> edges = new ArrayList();
-        if (targetReliability == -1.0) {
+
+        if (targetReliability < 0) {
             // Maximize reliability subject to given cost
             // TODO maximize reliability subject to given cost
             System.out.println("MAXIMIZE RELIABILITY SUBJECT TO COST");
 
-            MST mst = new MST(model.getNumOfNodes(), model.getCost(), model.getReliability(), true);
-            edges.addAll(mst.getEdges());
+//            MST mst = new MST(model.getNumOfNodes(), model.getCost(), model.getReliability(), true);
+//            edges.addAll(mst.getEdges());
+
+
+            Set<Edge> completeEdges = model.getCompleteEdgeSet();
+            Set<Edge> maximizedSet = maximizeReliability(model.getNumOfNodes(),
+                    targetCost - model.getCheapestEdgeCost(), targetCost, completeEdges);
+            edges.addAll(maximizedSet);
+
         } else if (targetCost == 0) {
             // Reach target reliability
             // TODO reach target reliability
@@ -45,6 +53,49 @@ public class Analyzer {
         System.out.println(edges.toString());
 
         return edges;
+    }
+
+    private static Set<Edge> maximizeReliability(int numOfNodes, int minCost, int maxCost, Set<Edge> edges){
+        // TODO handle the border cases of edges cost = 0 or edges reliability = 0
+        double maximizedReliability = 0.;
+        Set<Edge> maximizedEdgeSet = null;
+        Set<Set<Edge>> combinations = Sets.powerSet(edges);
+        for (Set<Edge> combination : combinations){
+            int cost = sumEdgeCost(combination);
+            if (cost <= minCost || cost > maxCost){
+                continue;
+            }
+            if (!bfsGraph(numOfNodes, combination)){
+                continue;
+            }
+            double reliability = computeReliability(numOfNodes, combination);
+            if (reliability > maximizedReliability){
+                maximizedReliability = reliability;
+                maximizedEdgeSet = combination;
+            }
+        }
+        return maximizedEdgeSet;
+    }
+
+
+    private static int sumEdgeCost(Set<Edge> edges){
+        int sum = 0;
+        for (Edge edge:edges){
+            sum += edge.getCost();
+        }
+        return sum;
+    }
+
+    /**
+     * Computes the network reliability.
+     *
+     * @param numOfNodes Number of nodes
+     * @param edges      Possible edges in a network
+     * @return The network reliability
+     */
+    public static double computeReliability(int numOfNodes, Set<Edge> edges){
+        List<Edge> e = new ArrayList<>(edges);
+        return computeReliability(numOfNodes, e);
     }
 
     /**
@@ -142,6 +193,19 @@ public class Analyzer {
      * @param numOfNodes Number of nodes in the graph
      * @param edges      A list of edges
      * @return True if all nodes can be reached. False otherwise.
+     */
+    private static boolean bfsGraph(int numOfNodes, Set<Edge> edges){
+        List<Edge> e = new ArrayList<>(edges);
+        return bfsGraph(numOfNodes, e);
+    }
+
+
+    /**
+     * Performs a breadth-first-search to see if the entire graph is reachable
+     *
+     * @param numOfNodes Number of nodes in the graph
+     * @param edges      A list of edges
+     * @return True if all nodes can be reached. False otherwise
      */
     private static boolean bfsGraph(int numOfNodes, List<Edge> edges) {
         boolean visited[] = new boolean[numOfNodes];
