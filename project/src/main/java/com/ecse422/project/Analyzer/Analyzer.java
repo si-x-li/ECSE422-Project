@@ -19,6 +19,8 @@ public class Analyzer {
         List<Edge> edges = new ArrayList();
         Set<Edge> completeEdges = model.getCompleteEdgeSet();
         Set<Edge> maximizedSet;
+        int maxCost = Math.min(targetCost, sumEdgeCost(completeEdges));
+        int minCost = targetCost - model.getCheapestEdgeCost();
 
         if (targetReliability < 0) {
             // Maximize reliability subject to given cost
@@ -30,10 +32,10 @@ public class Analyzer {
 
             try {
                 maximizedSet = maximizeReliability(model.getNumOfNodes(),
-                        targetCost - model.getCheapestEdgeCost(), targetCost, completeEdges);
+                        maxCost - model.getCheapestEdgeCost(), maxCost, completeEdges);
                 edges.addAll(maximizedSet);
             } catch (Exception e){
-                System.out.println("There is no solution");
+                System.out.printf("There is no solution %s\n", e.toString());
             }
 
 
@@ -46,7 +48,7 @@ public class Analyzer {
 //            edges.addAll(mst.getEdges());
             try {
                 maximizedSet = maximizeReliability(model.getNumOfNodes(),
-                        targetCost - model.getCheapestEdgeCost(), Integer.MAX_VALUE, completeEdges);
+                        maxCost - model.getCheapestEdgeCost(), maxCost, completeEdges);
                 edges.addAll(maximizedSet);
             } catch (Exception e){
                 System.out.println("There is no solution");
@@ -61,7 +63,7 @@ public class Analyzer {
 //            edges.addAll(mst.getEdges());
             try {
                 maximizedSet = maximizeReliability(model.getNumOfNodes(),
-                        targetCost - model.getCheapestEdgeCost(), targetCost, completeEdges);
+                        maxCost - model.getCheapestEdgeCost(), maxCost, completeEdges);
                 edges.addAll(maximizedSet);
             } catch (Exception e) {
                 System.out.println("There is no solution");

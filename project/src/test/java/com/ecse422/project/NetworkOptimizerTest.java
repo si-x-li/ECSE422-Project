@@ -7,6 +7,7 @@ import com.ecse422.project.Model.Model;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -15,10 +16,29 @@ public class NetworkOptimizerTest {
     private static double[] reliability = {0.94, 0.91, 0.96, 0.93, 0.92, 0.94, 0.97, 0.91, 0.92, 0.94, 0.90, 0.94, 0.93, 0.96, 0.91};
     private static int[] cost = {10, 25, 10, 20, 30, 10, 10, 25, 20, 20, 40, 10, 20, 10, 30};
     private static int numOfNodes = 6;
+    private static Random mRandom = new Random();
 
     private static double targetReliability = 0.95;
 
     private static int targetCost = 75;
+
+    private static double[] generateReliability(int size, double lowerbound, double upperbound){
+        int flatten_size = size * size;
+        double[] res = new double[flatten_size];
+        for (int i = 0; i<flatten_size; i++){
+            res[i] = lowerbound + mRandom.nextDouble() * (upperbound - lowerbound);
+        }
+        return res;
+    }
+
+    private  static int[] generateCost(int size, int lowerbound, int upperbound){
+        int flatten_size = size * size;
+        int[] res = new int[flatten_size];
+        for (int i = 0; i<flatten_size; i++){
+            res[i] = lowerbound + mRandom.nextInt() * (upperbound - lowerbound);
+        }
+        return res;
+    }
 
     @Test
     public void testMSTOptimizeByCost() {
@@ -82,23 +102,39 @@ public class NetworkOptimizerTest {
         assert (edges.get(4).getReliability() == 0.93);
     }
 
-//    @Test
-//    public void testComputeReliability() {
-//        Model model = new Model(reliability, cost, numOfNodes);
-//        assertEquals(Analyzer.computeReliability(numOfNodes,
-//                (new MST(model.getNumOfNodes(), model.getCost(), model.getReliability(), false)).getEdges()),
-//                0.781, 0.001);
-//        assertEquals(Analyzer.computeReliability(numOfNodes,
-//                (new MST(model.getNumOfNodes(), model.getCost(), model.getReliability(), true)).getEdges()),
-//                0.742, 0.001);
-//        Analyzer.optimize(model, 0.95, 0);
-//    }
+    @Test
+    public void testComputeReliability() {
+        Model model = new Model(reliability, cost, numOfNodes);
+        assertEquals(Analyzer.computeReliability(numOfNodes,
+                (new MST(model.getNumOfNodes(), model.getCost(), model.getReliability(), false)).getEdges()),
+                0.781, 0.001);
+        assertEquals(Analyzer.computeReliability(numOfNodes,
+                (new MST(model.getNumOfNodes(), model.getCost(), model.getReliability(), true)).getEdges()),
+                0.742, 0.001);
+        Analyzer.optimize(model, 0.95, 0);
+    }
 
     @Test
     public void testMaximizeReliability(){
         Model model = new Model(reliability, cost, numOfNodes);
         List<Edge> edges = Analyzer.optimize(model, -1.0, 105);
         double r = Analyzer.computeReliability(numOfNodes,edges);
+        System.out.println(r);
+        assertTrue(true);
+    }
+
+    @Test
+    public void testTimeComplexity(){
+        int matrix_size = 8;
+        double[] reliability10 = generateReliability(matrix_size, 0.5, 1.0);
+        int[] cost10 = generateCost(matrix_size, 10, 20);
+        long startTime = System.nanoTime();
+        Model model = new Model(reliability10, cost10, matrix_size);
+        List<Edge> edges = Analyzer.optimize(model, -1.0, 2000);
+
+        long endTime = System.nanoTime();
+        System.out.println(endTime-startTime);
+        double r = Analyzer.computeReliability(matrix_size,edges);
         System.out.println(r);
         assertTrue(true);
     }
