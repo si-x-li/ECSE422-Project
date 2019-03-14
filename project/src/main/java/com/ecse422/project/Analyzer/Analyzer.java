@@ -40,9 +40,9 @@ public class Analyzer {
             edges.addAll(mst.getEdges());
         }
 
-//        System.out.println(computeReliability(model.getNumOfNodes(), edges));
-//        System.out.println(computeCost(edges));
-//        System.out.println(edges.toString());
+        System.out.println(computeReliability(model.getNumOfNodes(), edges));
+        System.out.println(computeCost(edges));
+        System.out.println(edges.toString());
 
         return edges;
     }
@@ -57,15 +57,40 @@ public class Analyzer {
     public static double computeReliability(int numOfNodes, List<Edge> edges) {
         double reliability = 0.0;
 
-        // Insert
+        // Uniquely enumerate the edges
         Set<Integer> edgesSet = new HashSet<>();
         for (int i = 0; i < edges.size(); i++) {
             edgesSet.add(new Integer(i));
         }
 
-        // Obtains a list of combinations
-        Set<Set<Integer>> combinations = Sets.powerSet(edgesSet);
+        if (edges.size() > 5) {
+            // Approximate reliability using up to E - 3 edges
+            for (int i = edges.size() - 3; i <= edges.size(); i++) {
+                Set<Set<Integer>> combinations = Sets.combinations(edgesSet, i);
+                reliability += computeReliabilityOfSubgraph(numOfNodes, edges, combinations, edgesSet);
+            }
+        } else {
+            // Use full powerset to compute reliability for graphs with less than 5 edges
+            Set<Set<Integer>> combinations = Sets.powerSet(edgesSet);
+            reliability = computeReliabilityOfSubgraph(numOfNodes, edges, combinations, edgesSet);
+        }
+        return reliability;
+    }
 
+    /**
+     * Computes the network reliability for a set of subgraphs.
+     *
+     * @param numOfNodes   Number of Nodes
+     * @param edges        Possible edges in a network
+     * @param combinations Set of combinations with E edges
+     * @param edgesSet     Set of numbered edges in the network
+     * @return The reliability of the subgraph
+     */
+    private static double computeReliabilityOfSubgraph(int numOfNodes,
+                                                       List<Edge> edges,
+                                                       Set<Set<Integer>> combinations,
+                                                       Set<Integer> edgesSet) {
+        double reliability = 0.0;
         for (Set<Integer> combination : combinations) {
             // Checks that all nodes are connected
             boolean[] set = new boolean[numOfNodes];
@@ -112,11 +137,11 @@ public class Analyzer {
     }
 
     /**
-     * Performs a breadth-first-search to see if the entire graph is reachable
+     * Performs a breadth-first-search to see if the entire graph is reachable.
      *
      * @param numOfNodes Number of nodes in the graph
      * @param edges      A list of edges
-     * @return True if all nodes can be reached. False otherwise
+     * @return True if all nodes can be reached. False otherwise.
      */
     private static boolean bfsGraph(int numOfNodes, List<Edge> edges) {
         boolean visited[] = new boolean[numOfNodes];
