@@ -34,7 +34,7 @@ public class Analyzer {
                 maximizedSet = maximizeReliability(model.getNumOfNodes(),
                         maxCost - model.getCheapestEdgeCost(), maxCost, completeEdges);
                 edges.addAll(maximizedSet);
-            } catch (Exception e){
+            } catch (Exception e) {
                 System.out.printf("There is no solution %s\n", e.toString());
             }
 
@@ -44,15 +44,21 @@ public class Analyzer {
             // TODO reach target reliability
             System.out.println("REACH TARGET RELIABILITY");
 
-//            MST mst = new MST(model.getNumOfNodes(), model.getCost(), model.getReliability(), false);
-//            edges.addAll(mst.getEdges());
-            try {
-                maximizedSet = maximizeReliability(model.getNumOfNodes(),
-                        maxCost - model.getCheapestEdgeCost(), maxCost, completeEdges);
-                edges.addAll(maximizedSet);
-            } catch (Exception e){
-                System.out.println("There is no solution");
+            MST mst = new MST(model.getNumOfNodes(), model.getCost(), model.getReliability(), false);
+            edges.addAll(mst.getEdges());
+            Set<Edge> e = new HashSet<Edge>(edges);
+            while (computeReliability(model.getNumOfNodes(), e) < targetReliability) {
+                addNextEdge(model.getNumOfNodes(), targetCost, completeEdges, e);
             }
+            edges = new ArrayList<Edge>(e);
+
+//            try {
+//                maximizedSet = maximizeReliability(model.getNumOfNodes(),
+//                        maxCost - model.getCheapestEdgeCost(), maxCost, completeEdges);
+//                edges.addAll(maximizedSet);
+//            } catch (Exception e){
+//                System.out.println("There is no solution");
+//            }
 
         } else {
             // Reach target reliability subject to given cost
@@ -61,15 +67,15 @@ public class Analyzer {
 
 //            MST mst = new MST(model.getNumOfNodes(), model.getCost(), model.getReliability(), true);
 //            edges.addAll(mst.getEdges());
-            try {
-                maximizedSet = maximizeReliability(model.getNumOfNodes(),
-                        maxCost - model.getCheapestEdgeCost(), maxCost, completeEdges);
-                edges.addAll(maximizedSet);
-            } catch (Exception e) {
-                System.out.println("There is no solution");
-            } // FIXME
+//            try {
+            maximizedSet = maximizeReliability(model.getNumOfNodes(),
+                    maxCost - model.getCheapestEdgeCost(), maxCost, completeEdges);
+            edges.addAll(maximizedSet);
+//            } catch (Exception e) {
+//                System.out.println("There is no solution");
+//            } // FIXME
 
-            if (computeReliability(model.getNumOfNodes(), edges) < targetReliability){
+            if (computeReliability(model.getNumOfNodes(), edges) < targetReliability) {
                 System.out.println("There is no solution");
             }
 
@@ -82,20 +88,43 @@ public class Analyzer {
         return edges;
     }
 
-    private static Set<Edge> maximizeReliability(int numOfNodes, int minCost, int maxCost, Set<Edge> edges){
+
+    private static boolean addNextEdge(int numOfNodes, int targetCost, Set<Edge> completeEdges, Set<Edge> currentEdges) {
+        Sets.SetView<Edge> difference = Sets.difference(completeEdges, currentEdges);
+        double maxReliability = 0.;
+        Edge bestEdge = null;
+        for (Edge e : difference) {
+            currentEdges.add(e);
+            double r = computeReliability(numOfNodes, currentEdges);
+            if (r > maxReliability) {
+                maxReliability = r;
+                bestEdge = e;
+            }
+            currentEdges.remove(e);
+        }
+        if (bestEdge != null) {
+            currentEdges.add(bestEdge);
+            return true;
+        }
+        System.out.print(currentEdges.toString());
+        throw new RuntimeException("Ran out of edges");
+    }
+
+
+    private static Set<Edge> maximizeReliability(int numOfNodes, int minCost, int maxCost, Set<Edge> edges) {
         double maximizedReliability = 0.;
         Set<Edge> maximizedEdgeSet = null;
         Set<Set<Edge>> combinations = Sets.powerSet(edges);
-        for (Set<Edge> combination : combinations){
+        for (Set<Edge> combination : combinations) {
             int cost = sumEdgeCost(combination);
-            if (cost <= minCost || cost > maxCost){
+            if (cost <= minCost || cost > maxCost) {
                 continue;
             }
-            if (!bfsGraph(numOfNodes, combination)){
+            if (!bfsGraph(numOfNodes, combination)) {
                 continue;
             }
             double reliability = computeReliability(numOfNodes, combination);
-            if (reliability > maximizedReliability){
+            if (reliability > maximizedReliability) {
                 maximizedReliability = reliability;
                 maximizedEdgeSet = combination;
             }
@@ -104,9 +133,9 @@ public class Analyzer {
     }
 
 
-    private static int sumEdgeCost(Set<Edge> edges){
+    private static int sumEdgeCost(Set<Edge> edges) {
         int sum = 0;
-        for (Edge edge:edges){
+        for (Edge edge : edges) {
             sum += edge.getCost();
         }
         return sum;
@@ -119,7 +148,7 @@ public class Analyzer {
      * @param edges      Possible edges in a network
      * @return The network reliability
      */
-    public static double computeReliability(int numOfNodes, Set<Edge> edges){
+    public static double computeReliability(int numOfNodes, Set<Edge> edges) {
         List<Edge> e = new ArrayList<>(edges);
         return computeReliability(numOfNodes, e);
     }
@@ -135,14 +164,14 @@ public class Analyzer {
         double reliability = 0.0;
 
         // Uniquely enumerate the edges
-        Set<Integer> edgesSet = new HashSet<>();
+        Set<Integer> edgesSet = new HashSet();
         for (int i = 0; i < edges.size(); i++) {
             edgesSet.add(new Integer(i));
         }
 
-        if (edges.size() > 5) {
-            // Approximate reliability using up to E - 3 edges
-            for (int i = edges.size() - 3; i <= edges.size(); i++) {
+        if (edges.size() > 7) {
+            // Approximate reliability using up to E - 6 edges\
+            for (int i = edges.size() - 6; i <= edges.size(); i++) {
                 Set<Set<Integer>> combinations = Sets.combinations(edgesSet, i);
                 reliability += computeReliabilityOfSubgraph(numOfNodes, edges, combinations, edgesSet);
             }
@@ -220,7 +249,7 @@ public class Analyzer {
      * @param edges      A list of edges
      * @return True if all nodes can be reached. False otherwise.
      */
-    private static boolean bfsGraph(int numOfNodes, Set<Edge> edges){
+    private static boolean bfsGraph(int numOfNodes, Set<Edge> edges) {
         List<Edge> e = new ArrayList<>(edges);
         return bfsGraph(numOfNodes, e);
     }
