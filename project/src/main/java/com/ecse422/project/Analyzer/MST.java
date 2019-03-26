@@ -48,17 +48,23 @@ public class MST {
      * @param reliability The reliability matrix of the graph
      */
     private void findMaxReliability(int[][] cost, double[][] reliability) {
-        double maximum = -1.0;
+        double maximumReliability = -1.0;
+        double minimumCost = Integer.MAX_VALUE;
         int x = 0;
         int y = 0;
 
         // Find the edge with the highest reliability that's connected to an already connected node
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                if (set[i] == true && set[j] == false && reliability[i][j] > maximum) {
+                if (i == j) {
+                    continue;
+                }
+                if (set[i] == true && set[j] == false && reliability[i][j] > maximumReliability ||
+                    set[i] == true && set[j] == false && reliability[i][j] == maximumReliability && cost[i][j] < minimumCost) {
                     x = i;
                     y = j;
-                    maximum = reliability[i][j];
+                    maximumReliability = reliability[i][j];
+                    minimumCost = cost[i][j];
                 }
             }
         }
@@ -75,17 +81,23 @@ public class MST {
      * @param reliability The reliability matrix of the graph
      */
     private void initializeMaxReliability(int[][] cost, double[][] reliability) {
-        double maximum = -1.0;
+        double maximumReliability = -1.0;
+        int minimumCost = Integer.MAX_VALUE;
         int x = 0;
         int y = 0;
 
         // Find the edge with the highest reliability
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                if (reliability[i][j] > maximum) {
+                if (i == j) {
+                    continue;
+                }
+                if (reliability[i][j] > maximumReliability ||
+                    reliability[i][j] == maximumReliability && cost[i][j] < minimumCost) {
                     x = i;
                     y = j;
-                    maximum = reliability[i][j];
+                    maximumReliability = reliability[i][j];
+                    minimumCost = cost[i][j];
                 }
             }
         }
@@ -102,17 +114,23 @@ public class MST {
      * @param reliability The reliability matrix of the graph
      */
     private void initializeMinCost(int[][] cost, double[][] reliability) {
-        int minimum = Integer.MAX_VALUE;
+        double maximumReliability = 0.0;
+        int minimumCost = Integer.MAX_VALUE;
         int x = 0;
         int y = 0;
 
         // Find the edge with the lowest cost
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                if (cost[i][j] < minimum && cost[i][j] != 0) {
+                if (i == j) {
+                    continue;
+                }
+                if (cost[i][j] < minimumCost ||
+                    cost[i][j] == minimumCost && reliability[i][j] > maximumReliability) {
                     x = i;
                     y = j;
-                    minimum = cost[i][j];
+                    minimumCost = cost[i][j];
+                    maximumReliability = reliability[i][j];
                 }
             }
         }
@@ -129,17 +147,23 @@ public class MST {
      * @param reliability The reliability matrix of the graph
      */
     private void findMinCost(int[][] cost, double[][] reliability) {
-        int minimum = Integer.MAX_VALUE;
+        int minimumCost = Integer.MAX_VALUE;
+        double maximumReliability = 0.0;
         int x = 0;
         int y = 0;
 
         // Find the edge with the lowest cost that's connected to an already connected node
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                if (set[i] == true && set[j] == false && cost[i][j] < minimum && cost[i][j] != 0) {
+                if (i == j) {
+                    continue;
+                }
+                if (set[i] == true && set[j] == false && cost[i][j] < minimumCost ||
+                    set[i] == true && set[j] == false && cost[i][j] == minimumCost && reliability[i][j] > maximumReliability) {
                     x = i;
                     y = j;
-                    minimum = cost[i][j];
+                    minimumCost = cost[i][j];
+                    maximumReliability = reliability[i][j];
                 }
             }
         }

@@ -25,7 +25,7 @@ public class Analyzer {
 
             MST mst = new MST(model.getNumOfNodes(), model.getCost(), model.getReliability(), true);
             edges.addAll(mst.getEdges());
-
+            maximizeReliability(model, edges, targetCost);
         } else if (targetCost == 0) {
             // Reach target reliability
             // TODO reach target reliability
@@ -33,7 +33,7 @@ public class Analyzer {
 
             MST mst = new MST(model.getNumOfNodes(), model.getCost(), model.getReliability(), false);
             edges.addAll(mst.getEdges());
-
+            reachReliability(model, edges, targetReliability);
         } else {
             // Reach target reliability subject to given cost
             // TODO reach target reliability subject to given cost
@@ -41,40 +41,159 @@ public class Analyzer {
 
             MST mst = new MST(model.getNumOfNodes(), model.getCost(), model.getReliability(), true);
             edges.addAll(mst.getEdges());
+            reachCostAndReliability(model, edges, targetCost, targetReliability);
         }
-
-        System.out.println(computeReliability(model.getNumOfNodes(), edges));
-        System.out.println(computeCost(edges));
-        System.out.println(edges.toString());
-
         return edges;
     }
 
     /**
-     *
-     * @param model
-     * @param edges
+     * @param completeEdges
+     * @return
      */
-    public static void reachReliability(Model model, Set<Edge> edges) {
+    private static Set<Edge> filterCompleteEdges(Set<Edge> completeEdges, Set<Edge> edges) {
+        HashSet<Edge> filteredEdges = new HashSet(completeEdges);
 
+        // Remove from completeEdges, edges that have already been used
+        for (Edge edge : edges) {
+            for (Edge edgeInComplete : completeEdges) {
+                if ((edge.getSource() == edgeInComplete.getSource() &&
+                        edge.getDestination() == edgeInComplete.getDestination()) ||
+                        (edge.getSource() == edgeInComplete.getDestination() &&
+                                edge.getDestination() == edgeInComplete.getSource())) {
+                    filteredEdges.remove(edgeInComplete);
+                }
+            }
+        }
+
+        return filteredEdges;
     }
 
     /**
+     * Picks the best edge to add based on reliability/cost ratio.
      *
-     * @param model
-     * @param edges
+     * @param edges A set of possible edges
+     * @return The best Edge from a ratio (reliability / cost) perspective.
      */
-    public static void maximizeReliability(Model model, Set<Edge> edges) {
-
+    private static Edge pickBestEdge(Set<Edge> edges) {
+        Edge toAdd = null;
+        double ratio = 0.0;
+        for (Edge edge : edges) {
+            double newRatio = (edge.getReliability() / edge.getCost());
+//            System.out.println("Ratio: " + ratio + " New Ratio: " + newRatio);
+            if (newRatio > ratio) {
+//                System.out.println(edge.toString());
+                toAdd = edge;
+                ratio = newRatio;
+            }
+        }
+        return toAdd;
     }
 
     /**
+     * Reaches a target reliability.
      *
-     * @param model
-     * @param edges
+     * @param model             The model object
+     * @param edges             A set of edges
+     * @param targetReliability The target reliability
      */
-    public static void reachCostAndReliability(Model model, Set<Edge> edges) {
+    public static void reachReliability(Model model, Set<Edge> edges, double targetReliability) {
+        HashSet<Edge> completeEdges = (HashSet) model.getAllEdges();
+        HashSet<Edge> filteredEdges = (HashSet) filterCompleteEdges(completeEdges, edges);
+        double reliability = 0.0;
 
+        while (reliability < targetReliability) {
+            Edge toAdd = pickBestEdge(filteredEdges);
+
+            if (toAdd == null) {
+                break;
+            }
+            edges.add(toAdd);
+            filteredEdges.remove(toAdd);
+            reliability = computeReliability(model.getNumOfNodes(), edges);
+        }
+
+        if (reliability < targetReliability) {
+            System.out.println("Could not reach target reliability of: " + targetReliability);
+        }
+        reliability = computeReliability(model.getNumOfNodes(), edges);
+        System.out.println("Reliability: " + reliability);
+        System.out.println("Cost: " + computeCost(edges));
+        System.out.println("Graph: " + edges.toString());
+    }
+
+    /**
+     * Maximizes the reliability. Since the problem is NP-Hard, maximization is based on reliability-cost ratio.
+     *
+     * @param model      The model object
+     * @param edges      The set of edges
+     * @param targetCost The maximum cost
+     */
+    public static void maximizeReliability(Model model, Set<Edge> edges, int targetCost) {
+        HashSet<Edge> completeEdges = (HashSet) model.getAllEdges();
+        HashSet<Edge> filteredEdges = (HashSet) filterCompleteEdges(completeEdges, edges);
+
+        while (true) {
+            Edge toAdd = pickBestEdge(filteredEdges);
+
+            // No more nodes to add
+            if (toAdd == null) {
+                break;
+            }
+
+            // Exceeded cost
+            if ((computeCost(edges) + toAdd.getCost()) > targetCost) {
+                break;
+            }
+
+            edges.add(toAdd);
+            filteredEdges.remove(toAdd);
+        }
+        double reliability = computeReliability(model.getNumOfNodes(), edges);
+        System.out.println("Maximum reliability: " + reliability);
+        System.out.println("Cost of graph: " + computeCost(edges));
+        System.out.println("Graph: " + edges.toString());
+    }
+
+    /**
+     * Reaches a target reliability given cost constraint.
+     *
+     * @param model             The model object
+     * @param edges             The set of edges
+     * @param targetCost        The maximum cost
+     * @param targetReliability The target reliability
+     */
+    public static void reachCostAndReliability(Model model, Set<Edge> edges, int targetCost, double targetReliability) {
+        HashSet<Edge> completeEdges = (HashSet) model.getAllEdges();
+        HashSet<Edge> filteredEdges = (HashSet) filterCompleteEdges(completeEdges, edges);
+        double reliability = 0.0;
+
+        while (reliability < targetReliability) {
+            Edge toAdd = pickBestEdge(filteredEdges);
+
+            // No new edges found
+            if (toAdd == null) {
+                break;
+            }
+
+//            System.out.println(toAdd.toString());
+
+            // Exceeded cost
+            if ((computeCost(edges) + toAdd.getCost()) > targetCost) {
+                break;
+            }
+
+            edges.add(toAdd);
+            filteredEdges.remove(toAdd);
+            reliability = computeReliability(model.getNumOfNodes(), edges);
+        }
+
+        reliability = computeReliability(model.getNumOfNodes(), edges);
+        if (reliability < targetReliability) {
+            System.out.println("Could not reach reliability given cost");
+        }
+        System.out.println("Reliability: " + reliability);
+        System.out.println("Cost: " + computeCost(edges));
+        System.out.println("Graph: " + edges.toString());
     }
 
     /**
@@ -89,7 +208,7 @@ public class Analyzer {
     }
 
     /**
-     * Computes the network reliability.
+     * Computes the network reliability by approximating.
      *
      * @param numOfNodes Number of nodes
      * @param edges      Possible edges in a network
@@ -104,8 +223,46 @@ public class Analyzer {
             edgesSet.add(new Integer(i));
         }
 
-        if (edges.size() > 6) {
-            // Approximate reliability using up to E - 3 edges
+        for (int i = (numOfNodes - 1); i <= edges.size(); i++) {
+            // If the number of combinations exceeds the maximum integer value skip this
+            if (factorial(edges.size()) / (factorial(edges.size() - i) * factorial(i)) > Integer.MAX_VALUE) {
+                continue;
+            }
+            Set<Set<Integer>> combinations = Sets.combinations(edgesSet, i);
+            reliability += computeReliabilityOfSubgraph(numOfNodes, edges, combinations, edgesSet);
+        }
+        return reliability;
+    }
+
+    /**
+     * Computes the network reliability by approximating.
+     *
+     * @param numOfNodes Number of nodes
+     * @param edges      Possible edges in a network
+     * @return The network reliability
+     */
+    public static double fastComputeReliability(int numOfNodes, Set<Edge> edges) {
+        return fastComputeReliability(numOfNodes, new ArrayList(edges));
+    }
+
+    /**
+     * Computes the network reliability by approximating.
+     *
+     * @param numOfNodes Number of nodes
+     * @param edges      Possible edges in a network
+     * @return The network reliability
+     */
+    public static double fastComputeReliability(int numOfNodes, List<Edge> edges) {
+        double reliability = 0.0;
+
+        // Uniquely enumerate the edges
+        HashSet<Integer> edgesSet = new HashSet<>();
+        for (int i = 0; i < edges.size(); i++) {
+            edgesSet.add(new Integer(i));
+        }
+
+        if (edges.size() > 7) {
+            // Approximate reliability using up to E - 6 edges
             for (int i = edges.size() - 6; i <= edges.size(); i++) {
                 Set<Set<Integer>> combinations = Sets.combinations(edgesSet, i);
                 reliability += computeReliabilityOfSubgraph(numOfNodes, edges, combinations, edgesSet);
@@ -255,8 +412,8 @@ public class Analyzer {
      * @param n
      * @return The factorial of the input number
      */
-    private static int factorial(int n) {
-        int output = 1;
+    private static double factorial(int n) {
+        double output = 1;
         for (int i = 1; i <= n; i++) {
             output *= i;
         }
