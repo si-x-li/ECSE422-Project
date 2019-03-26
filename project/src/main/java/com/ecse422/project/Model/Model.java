@@ -10,8 +10,6 @@ public class Model {
     private double[][] reliability;
     private int[][] cost;
     private int numOfNodes;
-    private int cheapestEdgeCost;
-    private Set<Edge> completeEdgeSet;
 
     /**
      * Constructor
@@ -51,36 +49,7 @@ public class Model {
             }
         }
         this.numOfNodes = numOfNodes;
-
-        this.cheapestEdgeCost = Integer.MAX_VALUE;
-        for (int i = 0; i < cost.length; i++) {
-            int edgeCost = cost[i];
-            if (edgeCost < this.cheapestEdgeCost && edgeCost>0 && reliability[i]>0){
-                this.cheapestEdgeCost = edgeCost;
-            }
-        }
-
-        // Initialize comple set of edges with reliability > 0
-        count = 0;
-        this.completeEdgeSet = new HashSet<>();
-        for (int i = 0; i < numOfNodes; i++) {
-            for (int j = i + 1; j < numOfNodes; j++) {
-                if ( reliability[count] > 0){
-                    completeEdgeSet.add(new Edge(i, j, cost[count], reliability[count]));
-                }
-                count++;
-            }
-        }
-
     }
-
-    public Set<Edge> getCompleteEdgeSet(){ return completeEdgeSet; }
-
-    /**
-     * Returns the cheapest edge with non-zero cost and non-zero reliability
-     * @return
-     */
-    public int getCheapestEdgeCost(){ return cheapestEdgeCost; }
 
     /**
      * Returns the reliability matrix.
