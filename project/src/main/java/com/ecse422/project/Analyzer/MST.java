@@ -60,7 +60,7 @@ public class MST {
                     continue;
                 }
                 if (set[i] == true && set[j] == false && reliability[i][j] > maximumReliability ||
-                    set[i] == true && set[j] == false && reliability[i][j] == maximumReliability && cost[i][j] < minimumCost) {
+                        set[i] == true && set[j] == false && reliability[i][j] == maximumReliability && cost[i][j] < minimumCost) {
                     x = i;
                     y = j;
                     maximumReliability = reliability[i][j];
@@ -93,7 +93,7 @@ public class MST {
                     continue;
                 }
                 if (reliability[i][j] > maximumReliability ||
-                    reliability[i][j] == maximumReliability && cost[i][j] < minimumCost) {
+                        reliability[i][j] == maximumReliability && cost[i][j] < minimumCost) {
                     x = i;
                     y = j;
                     maximumReliability = reliability[i][j];
@@ -126,7 +126,7 @@ public class MST {
                     continue;
                 }
                 if (cost[i][j] < minimumCost ||
-                    cost[i][j] == minimumCost && reliability[i][j] > maximumReliability) {
+                        cost[i][j] == minimumCost && reliability[i][j] > maximumReliability) {
                     x = i;
                     y = j;
                     minimumCost = cost[i][j];
@@ -159,7 +159,7 @@ public class MST {
                     continue;
                 }
                 if (set[i] == true && set[j] == false && cost[i][j] < minimumCost ||
-                    set[i] == true && set[j] == false && cost[i][j] == minimumCost && reliability[i][j] > maximumReliability) {
+                        set[i] == true && set[j] == false && cost[i][j] == minimumCost && reliability[i][j] > maximumReliability) {
                     x = i;
                     y = j;
                     minimumCost = cost[i][j];

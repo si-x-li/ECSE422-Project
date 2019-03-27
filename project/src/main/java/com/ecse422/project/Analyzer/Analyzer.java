@@ -5,6 +5,7 @@ import com.ecse422.project.Model.Model;
 import com.google.common.collect.Sets;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 public class Analyzer {
     /**
@@ -20,7 +21,6 @@ public class Analyzer {
 
         if (targetReliability < 0) {
             // Maximize reliability subject to given cost
-            // TODO maximize reliability subject to given cost
             System.out.println("MAXIMIZE RELIABILITY SUBJECT TO COST");
 
             MST mst = new MST(model.getNumOfNodes(), model.getCost(), model.getReliability(), true);
@@ -28,7 +28,6 @@ public class Analyzer {
             maximizeReliability(model, edges, targetCost);
         } else if (targetCost == 0) {
             // Reach target reliability
-            // TODO reach target reliability
             System.out.println("REACH TARGET RELIABILITY");
 
             MST mst = new MST(model.getNumOfNodes(), model.getCost(), model.getReliability(), false);
@@ -36,7 +35,6 @@ public class Analyzer {
             reachReliability(model, edges, targetReliability);
         } else {
             // Reach target reliability subject to given cost
-            // TODO reach target reliability subject to given cost
             System.out.println("REACH TARGET RELIABILITY SUBJECT TO COST");
 
             MST mst = new MST(model.getNumOfNodes(), model.getCost(), model.getReliability(), true);
@@ -47,8 +45,11 @@ public class Analyzer {
     }
 
     /**
-     * @param completeEdges
-     * @return
+     * Removes edges that are already chosen.
+     *
+     * @param completeEdges A set of all edges
+     * @param edges         A set of currently chosen edges
+     * @return A set of edges that are left to chose
      */
     private static Set<Edge> filterCompleteEdges(Set<Edge> completeEdges, Set<Edge> edges) {
         HashSet<Edge> filteredEdges = new HashSet(completeEdges);
@@ -79,9 +80,7 @@ public class Analyzer {
         double ratio = 0.0;
         for (Edge edge : edges) {
             double newRatio = (edge.getReliability() / edge.getCost());
-//            System.out.println("Ratio: " + ratio + " New Ratio: " + newRatio);
             if (newRatio > ratio) {
-//                System.out.println(edge.toString());
                 toAdd = edge;
                 ratio = newRatio;
             }
@@ -99,7 +98,7 @@ public class Analyzer {
     public static void reachReliability(Model model, Set<Edge> edges, double targetReliability) {
         HashSet<Edge> completeEdges = (HashSet) model.getAllEdges();
         HashSet<Edge> filteredEdges = (HashSet) filterCompleteEdges(completeEdges, edges);
-        double reliability = 0.0;
+        double reliability = computeReliability(model.getNumOfNodes(), edges);
 
         while (reliability < targetReliability) {
             Edge toAdd = pickBestEdge(filteredEdges);
@@ -165,7 +164,7 @@ public class Analyzer {
     public static void reachCostAndReliability(Model model, Set<Edge> edges, int targetCost, double targetReliability) {
         HashSet<Edge> completeEdges = (HashSet) model.getAllEdges();
         HashSet<Edge> filteredEdges = (HashSet) filterCompleteEdges(completeEdges, edges);
-        double reliability = 0.0;
+        double reliability = computeReliability(model.getNumOfNodes(), edges);
 
         while (reliability < targetReliability) {
             Edge toAdd = pickBestEdge(filteredEdges);
@@ -174,8 +173,6 @@ public class Analyzer {
             if (toAdd == null) {
                 break;
             }
-
-//            System.out.println(toAdd.toString());
 
             // Exceeded cost
             if ((computeCost(edges) + toAdd.getCost()) > targetCost) {
@@ -224,6 +221,7 @@ public class Analyzer {
         }
 
         for (int i = (numOfNodes - 1); i <= edges.size(); i++) {
+            System.out.println("Computing " + i + " + out of " + edges.size());
             // If the number of combinations exceeds the maximum integer value skip this
             if (factorial(edges.size()) / (factorial(edges.size() - i) * factorial(i)) > Integer.MAX_VALUE) {
                 continue;
@@ -276,7 +274,7 @@ public class Analyzer {
     }
 
     /**
-     * Computes the network reliability for a set of subgraphs.
+     * Computes the network reliability for a set of subgraphs using parallel processing.
      *
      * @param numOfNodes   Number of Nodes
      * @param edges        Possible edges in a network
@@ -288,49 +286,36 @@ public class Analyzer {
                                                        List<Edge> edges,
                                                        Set<Set<Integer>> combinations,
                                                        Set<Integer> edgesSet) {
-        double reliability = 0.0;
-        for (Set<Integer> combination : combinations) {
-            // Checks that all nodes are connected
-            boolean[] set = new boolean[numOfNodes];
-            for (Integer edge : combination) {
-                set[edges.get(edge).getSource()] = true;
-                set[edges.get(edge).getDestination()] = true;
-            }
-
-            boolean skip = false;
-            for (int i = 0; i < numOfNodes; i++) {
-                if (!set[i]) {
-                    skip = true;
-                    break;
-                }
-            }
-
-            if (skip) {
-                continue;
-            }
-
-            // Checks that all nodes can be reached
-            List<Edge> potentialGraph = new ArrayList();
-            for (Integer edge : combination) {
-                potentialGraph.add(edges.get(edge));
-            }
-            if (!bfsGraph(numOfNodes, potentialGraph)) {
-                continue;
-            }
-
-            double tempReliability = 1.0;
-            // Calculate reliability
-            for (Integer edge : edgesSet) {
-                if (combination.contains(edge)) {
-                    // Edge is turned on
-                    tempReliability *= edges.get(edge).getReliability();
-                } else {
-                    // Edge is turned off
-                    tempReliability *= 1 - edges.get(edge).getReliability();
-                }
-            }
-            reliability += tempReliability;
+        // Split task across n cores
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+        if (availableProcessors < 1) {
+            availableProcessors = 1;
         }
+
+        List<Set<Set<Integer>>> partitions = new ArrayList(availableProcessors);
+        for (int i = 0; i < availableProcessors; i++) {
+            partitions.add(new HashSet<>());
+        }
+
+        int count = 0;
+        for (Set<Integer> combination : combinations) {
+            partitions.get(count++ % (availableProcessors)).add(combination);
+        }
+
+        double reliability = 0.0;
+
+        ExecutorService pool = Executors.newFixedThreadPool(availableProcessors);
+        for (int i = 0; i < availableProcessors; i++) {
+            try {
+                reliability += (pool.submit(new ComputationReliability(numOfNodes, edges, partitions.get(i), edgesSet))).get();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        pool.shutdown();
         return reliability;
     }
 
@@ -341,7 +326,7 @@ public class Analyzer {
      * @param edges      A list of edges
      * @return True if all nodes can be reached. False otherwise.
      */
-    private static boolean bfsGraph(int numOfNodes, Set<Edge> edges) {
+    public static boolean bfsGraph(int numOfNodes, Set<Edge> edges) {
         List<Edge> e = new ArrayList<>(edges);
         return bfsGraph(numOfNodes, e);
     }
@@ -354,7 +339,7 @@ public class Analyzer {
      * @param edges      A list of edges
      * @return True if all nodes can be reached. False otherwise
      */
-    private static boolean bfsGraph(int numOfNodes, List<Edge> edges) {
+    public static boolean bfsGraph(int numOfNodes, List<Edge> edges) {
         boolean visited[] = new boolean[numOfNodes];
 
         Queue<Integer> queue = new LinkedList();
@@ -418,5 +403,77 @@ public class Analyzer {
             output *= i;
         }
         return output;
+    }
+}
+
+/**
+ * Employs Callable to parallel process reliability computation.
+ */
+class ComputationReliability implements Callable<Double> {
+    private volatile int numOfNodes;
+    private volatile List<Edge> edges;
+    private volatile Set<Set<Integer>> combinations;
+    private volatile Set<Integer> edgesSet;
+
+    public ComputationReliability(int numOfNodes,
+                                  List<Edge> edges,
+                                  Set<Set<Integer>> combinations,
+                                  Set<Integer> edgesSet) {
+        this.numOfNodes = numOfNodes;
+        this.edges = edges;
+        this.combinations = combinations;
+        this.edgesSet = edgesSet;
+    }
+
+    /**
+     * Computes the reliability using callback.
+     *
+     * @return The reliability of the network
+     */
+    public Double call() {
+        double reliability = 0.0;
+        for (Set<Integer> combination : combinations) {
+            // Checks that all nodes are connected
+            boolean[] set = new boolean[numOfNodes];
+            for (Integer edge : combination) {
+                set[edges.get(edge).getSource()] = true;
+                set[edges.get(edge).getDestination()] = true;
+            }
+
+            boolean skip = false;
+            for (int i = 0; i < numOfNodes; i++) {
+                if (!set[i]) {
+                    skip = true;
+                    break;
+                }
+            }
+
+            if (skip) {
+                continue;
+            }
+
+            // Checks that all nodes can be reached
+            List<Edge> potentialGraph = new ArrayList();
+            for (Integer edge : combination) {
+                potentialGraph.add(edges.get(edge));
+            }
+            if (!Analyzer.bfsGraph(numOfNodes, potentialGraph)) {
+                continue;
+            }
+
+            double tempReliability = 1.0;
+            // Calculate reliability
+            for (Integer edge : edgesSet) {
+                if (combination.contains(edge)) {
+                    // Edge is turned on
+                    tempReliability *= edges.get(edge).getReliability();
+                } else {
+                    // Edge is turned off
+                    tempReliability *= 1 - edges.get(edge).getReliability();
+                }
+            }
+            reliability += tempReliability;
+        }
+        return reliability;
     }
 }

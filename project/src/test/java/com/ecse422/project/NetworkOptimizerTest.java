@@ -135,14 +135,25 @@ public class NetworkOptimizerTest {
 //        int matrix_size = 8;
 //        double[] reliability10 = generateReliability(matrix_size, 0.5, 1.0);
 //        int[] cost10 = generateCost(matrix_size, 10, 20);
-        long startTime = System.nanoTime();
         Model model = new Model(rr10, cc10, nn10);
-        Set<Edge> edges = Analyzer.optimize(model, -1.0, 300);
 
+        long startTime = System.nanoTime();
+        Analyzer.optimize(model, 0.95, 275);
         long endTime = System.nanoTime();
         System.out.println(endTime - startTime);
-        double r = Analyzer.computeReliability(nn10, edges);
-        System.out.println(r);
+
+        startTime = System.nanoTime();
+        Analyzer.optimize(model, -1.0, 300);
+        endTime = System.nanoTime();
+        System.out.println(endTime - startTime);
+
+
+        model = new Model(reliability, cost, numOfNodes);
+        startTime = System.nanoTime();
+        Analyzer.optimize(model, -1.0, 300);
+        endTime = System.nanoTime();
+        System.out.println(endTime - startTime);
+
         assertTrue(true);
     }
 }
