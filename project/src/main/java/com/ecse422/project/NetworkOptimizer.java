@@ -76,6 +76,27 @@ public class NetworkOptimizer {
                         "--------------------------------------------------------------------------------\n" +
                                 "                                     NETWORK                                   \n" +
                                 "--------------------------------------------------------------------------------");
+                if (model.getNumOfNodes() > 6){
+                    System.out.println("Warning! This could take awhile to compute...");
+                    int estimate = 0;
+                    switch (model.getNumOfNodes()){
+                        case 7:
+                            estimate = 2;
+                            break;
+                        case 8:
+                            estimate = 5;
+                            break;
+                        case 9:
+                            estimate = 10;
+                            break;
+                        case 10:
+                            estimate = 20;
+                            break;
+                        default:
+                            estimate = 100;
+                    }
+                    System.out.printf("*\nExpected completion time: %d\n*\n", estimate);
+                }
                 Analyzer.optimize(model, reliability, cost);
                 System.out.println(
                         "--------------------------------------------------------------------------------\n" +

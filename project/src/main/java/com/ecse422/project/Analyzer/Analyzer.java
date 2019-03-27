@@ -141,7 +141,8 @@ public class Analyzer {
 
             // Exceeded cost
             if ((computeCost(edges) + toAdd.getCost()) > targetCost) {
-                break;
+                filteredEdges.remove(toAdd);
+                continue;
             }
 
             edges.add(toAdd);
@@ -176,7 +177,8 @@ public class Analyzer {
 
             // Exceeded cost
             if ((computeCost(edges) + toAdd.getCost()) > targetCost) {
-                break;
+                filteredEdges.remove(toAdd);
+                continue;
             }
 
             edges.add(toAdd);
