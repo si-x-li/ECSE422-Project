@@ -143,7 +143,7 @@ public class NetworkOptimizerTest {
         System.out.println(endTime - startTime);
 
         startTime = System.nanoTime();
-        Analyzer.optimize(model, -1.0, 300);
+//        Analyzer.optimize(model, -1.0, 300);
         endTime = System.nanoTime();
         System.out.println(endTime - startTime);
 

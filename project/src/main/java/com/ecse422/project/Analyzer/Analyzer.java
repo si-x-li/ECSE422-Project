@@ -221,7 +221,7 @@ public class Analyzer {
         }
 
         for (int i = (numOfNodes - 1); i <= edges.size(); i++) {
-            System.out.println("Computing " + i + " + out of " + edges.size());
+            System.out.println("Computing " + i + " out of " + edges.size());
             // If the number of combinations exceeds the maximum integer value skip this
             if (factorial(edges.size()) / (factorial(edges.size() - i) * factorial(i)) > Integer.MAX_VALUE) {
                 continue;
