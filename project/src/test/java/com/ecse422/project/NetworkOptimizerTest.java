@@ -138,7 +138,7 @@ public class NetworkOptimizerTest {
         Model model = new Model(rr10, cc10, nn10);
 
         long startTime = System.nanoTime();
-        Analyzer.optimize(model, -1, 265);
+        Analyzer.optimize(model, -1, 275);
         long endTime = System.nanoTime();
         System.out.println(endTime - startTime);
 
