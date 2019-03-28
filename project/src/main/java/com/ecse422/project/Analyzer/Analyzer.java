@@ -222,7 +222,7 @@ public class Analyzer {
             edgesSet.add(new Integer(i));
         }
 
-        if (edges.size() > 23){
+        if (edges.size() > 21){
             for (int i = edges.size() - 7; i <= edges.size(); i++) {
                 Set<Set<Integer>> combinations = Sets.combinations(edgesSet, i);
                 reliability += computeReliabilityOfSubgraph(numOfNodes, edges, combinations, edgesSet);
