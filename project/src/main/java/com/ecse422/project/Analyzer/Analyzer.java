@@ -222,15 +222,24 @@ public class Analyzer {
             edgesSet.add(new Integer(i));
         }
 
-        for (int i = (numOfNodes - 1); i <= edges.size(); i++) {
-            System.out.println("Computing " + i + " out of " + edges.size());
-            // If the number of combinations exceeds the maximum integer value skip this
-            if (factorial(edges.size()) / (factorial(edges.size() - i) * factorial(i)) > Integer.MAX_VALUE) {
-                continue;
+        if (edges.size() > 23){
+            for (int i = edges.size() - 7; i <= edges.size(); i++) {
+                Set<Set<Integer>> combinations = Sets.combinations(edgesSet, i);
+                reliability += computeReliabilityOfSubgraph(numOfNodes, edges, combinations, edgesSet);
             }
-            Set<Set<Integer>> combinations = Sets.combinations(edgesSet, i);
-            reliability += computeReliabilityOfSubgraph(numOfNodes, edges, combinations, edgesSet);
+        } else {
+            for (int i = (numOfNodes - 1); i <= edges.size(); i++) {
+                System.out.println("Computing " + i + " out of " + edges.size());
+                // If the number of combinations exceeds the maximum integer value skip this
+                if (factorial(edges.size()) / (factorial(edges.size() - i) * factorial(i)) > Integer.MAX_VALUE) {
+                    continue;
+                }
+                Set<Set<Integer>> combinations = Sets.combinations(edgesSet, i);
+                reliability += computeReliabilityOfSubgraph(numOfNodes, edges, combinations, edgesSet);
+            }
         }
+
+
         return reliability;
     }
 

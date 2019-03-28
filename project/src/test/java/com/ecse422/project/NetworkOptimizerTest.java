@@ -138,7 +138,7 @@ public class NetworkOptimizerTest {
         Model model = new Model(rr10, cc10, nn10);
 
         long startTime = System.nanoTime();
-        Analyzer.optimize(model, 0.95, 275);
+        Analyzer.optimize(model, -1, 250);
         long endTime = System.nanoTime();
         System.out.println(endTime - startTime);
 
@@ -148,11 +148,11 @@ public class NetworkOptimizerTest {
         System.out.println(endTime - startTime);
 
 
-        model = new Model(reliability, cost, numOfNodes);
-        startTime = System.nanoTime();
-        Analyzer.optimize(model, -1.0, 300);
-        endTime = System.nanoTime();
-        System.out.println(endTime - startTime);
+//        model = new Model(reliability, cost, numOfNodes);
+//        startTime = System.nanoTime();
+//        Analyzer.optimize(model, -1.0, 300);
+//        endTime = System.nanoTime();
+//        System.out.println(endTime - startTime);
 
         assertTrue(true);
     }
