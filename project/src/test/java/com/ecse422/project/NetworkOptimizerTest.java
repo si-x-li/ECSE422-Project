@@ -41,7 +41,7 @@ public class NetworkOptimizerTest {
         int flatten_size = (size * (size - 1)) / 2;
         int[] res = new int[flatten_size];
         for (int i = 0; i < flatten_size; i++) {
-            res[i] = lowerbound + mRandom.nextInt() * (upperbound - lowerbound);
+            res[i] = lowerbound + mRandom.nextInt(upperbound - lowerbound + 1);
         }
         return res;
     }
@@ -132,9 +132,6 @@ public class NetworkOptimizerTest {
 
     @Test
     public void testTimeComplexity() {
-//        int matrix_size = 8;
-//        double[] reliability10 = generateReliability(matrix_size, 0.5, 1.0);
-//        int[] cost10 = generateCost(matrix_size, 10, 20);
         Model model = new Model(rr10, cc10, nn10);
 
         long startTime = System.nanoTime();
@@ -143,7 +140,7 @@ public class NetworkOptimizerTest {
         System.out.println(endTime - startTime);
 
         startTime = System.nanoTime();
-//        Analyzer.optimize(model, -1.0, 300);
+        Analyzer.optimize(model, -1.0, 325);
         endTime = System.nanoTime();
         System.out.println(endTime - startTime);
 
@@ -153,6 +150,16 @@ public class NetworkOptimizerTest {
         Analyzer.optimize(model, -1.0, 70);
         endTime = System.nanoTime();
         System.out.println(endTime - startTime);
+//
+//        int matrix_size = 10;
+//        double[] reliability10 = generateReliability(matrix_size, 0.9, 0.98);
+//        int[] cost10 = generateCost(matrix_size, 10, 20);
+//
+//        model = new Model(reliability10, cost10, matrix_size);
+//        startTime = System.nanoTime();
+//        Analyzer.optimize(model, -1.0, 2000);
+//        endTime = System.nanoTime();
+//        System.out.println(endTime - startTime);
 
         assertTrue(true);
     }

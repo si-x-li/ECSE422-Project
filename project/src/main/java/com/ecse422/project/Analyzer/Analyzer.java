@@ -233,9 +233,27 @@ public class Analyzer {
         for (int i = 0; i < edges.size(); i++) {
             edgesSet.add(new Integer(i));
         }
-
-        if (edges.size() > 22){
+        if (edges.size() > 40) {
+            for (int i = edges.size() - 5; i <= edges.size(); i++) {
+                System.out.println("Computing " + i + " out of " + edges.size());
+                Set<Set<Integer>> combinations = Sets.combinations(edgesSet, i);
+                reliability += computeReliabilityOfSubgraph(numOfNodes, edges, combinations, edgesSet);
+            }
+        } else if (edges.size() > 35) {
+            for (int i = edges.size() - 6; i <= edges.size(); i++) {
+                System.out.println("Computing " + i + " out of " + edges.size());
+                Set<Set<Integer>> combinations = Sets.combinations(edgesSet, i);
+                reliability += computeReliabilityOfSubgraph(numOfNodes, edges, combinations, edgesSet);
+            }
+        } else if (edges.size() > 30) {
             for (int i = edges.size() - 7; i <= edges.size(); i++) {
+                System.out.println("Computing " + i + " out of " + edges.size());
+                Set<Set<Integer>> combinations = Sets.combinations(edgesSet, i);
+                reliability += computeReliabilityOfSubgraph(numOfNodes, edges, combinations, edgesSet);
+            }
+        } else if (edges.size() > 22) {
+            for (int i = edges.size() - 7; i <= edges.size(); i++) {
+                System.out.println("Computing " + i + " out of " + edges.size());
                 Set<Set<Integer>> combinations = Sets.combinations(edgesSet, i);
                 reliability += computeReliabilityOfSubgraph(numOfNodes, edges, combinations, edgesSet);
             }
@@ -256,6 +274,7 @@ public class Analyzer {
     }
 
     /**
+     * @deprecated
      * Computes the network reliability by approximating.
      *
      * @param numOfNodes Number of nodes
@@ -267,6 +286,7 @@ public class Analyzer {
     }
 
     /**
+     * @deprecated
      * Computes the network reliability by approximating.
      *
      * @param numOfNodes Number of nodes
@@ -455,6 +475,7 @@ class ComputationReliability implements Callable<Double> {
      */
     public Double call() {
         double reliability = 0.0;
+        int count = 0;
         for (Set<Integer> combination : combinations) {
             // Checks that all nodes are connected
             boolean[] set = new boolean[numOfNodes];
