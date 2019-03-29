@@ -6,7 +6,7 @@ import com.ecse422.project.Reader.Reader;
 
 import java.util.Scanner;
 
-public class App {
+public class NetworkOptimizer {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
@@ -52,9 +52,9 @@ public class App {
             try {
                 Model model = Reader.readFromFile(path);
                 System.out.println(
-                        "--------------------------------------------------------------------------------" +
-                        "                                   PARAMETERS                                   " +
-                        "--------------------------------------------------------------------------------");
+                        "--------------------------------------------------------------------------------\n" +
+                                "                                   PARAMETERS                                   \n" +
+                                "--------------------------------------------------------------------------------");
                 System.out.print(model.toString());
                 if (reliability == -1.0) {
                     System.out.println("Reliability: Unconstrained");
@@ -67,10 +67,42 @@ public class App {
                     System.out.println("Cost: " + cost);
                 }
                 System.out.println(
-                        "--------------------------------------------------------------------------------" +
-                        "********************************************************************************" +
-                        "--------------------------------------------------------------------------------");
-                Analyzer.analyze(model, reliability, cost);
+                        "--------------------------------------------------------------------------------\n" +
+                                "********************************************************************************\n" +
+                                "--------------------------------------------------------------------------------");
+
+                // Optimize the graph
+                System.out.println(
+                        "--------------------------------------------------------------------------------\n" +
+                                "                                     NETWORK                                   \n" +
+                                "--------------------------------------------------------------------------------");
+                if (model.getNumOfNodes() > 6){
+                    System.out.println("Warning! This could take awhile to compute...");
+                    int estimate = 0;
+                    switch (model.getNumOfNodes()){
+                        case 7:
+                            estimate = 2;
+                            break;
+                        case 8:
+                            estimate = 5;
+                            break;
+                        case 9:
+                            estimate = 10;
+                            break;
+                        case 10:
+                            estimate = 20;
+                            break;
+                        default:
+                            estimate = 100;
+                    }
+                    System.out.printf("*\nExpected completion time: %d\n*\n", estimate);
+                }
+                Analyzer.optimize(model, reliability, cost);
+                System.out.println(
+                        "--------------------------------------------------------------------------------\n" +
+                                "********************************************************************************\n" +
+                                "--------------------------------------------------------------------------------");
+
             } catch (IllegalArgumentException err) {
                 System.out.println("Critical exception: " + err.getLocalizedMessage() + "\n");
             }
