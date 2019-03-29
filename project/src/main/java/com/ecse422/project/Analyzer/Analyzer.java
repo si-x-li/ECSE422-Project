@@ -62,6 +62,9 @@ public class Analyzer {
                         (edge.getSource() == edgeInComplete.getDestination() &&
                                 edge.getDestination() == edgeInComplete.getSource())) {
                     filteredEdges.remove(edgeInComplete);
+                    for (Edge e: filteredEdges){
+                        e.updateRatio(edgeInComplete);
+                    }
                 }
             }
         }
@@ -79,7 +82,7 @@ public class Analyzer {
         Edge toAdd = null;
         double ratio = 0.0;
         for (Edge edge : edges) {
-            double newRatio = (edge.getReliability() / edge.getCost());
+            double newRatio = edge.getRatio();
             if (newRatio > ratio) {
                 toAdd = edge;
                 ratio = newRatio;
@@ -108,6 +111,9 @@ public class Analyzer {
             }
             edges.add(toAdd);
             filteredEdges.remove(toAdd);
+            for (Edge e : filteredEdges){
+                e.updateRatio(toAdd);
+            }
             reliability = computeReliability(model.getNumOfNodes(), edges);
         }
 
@@ -147,6 +153,9 @@ public class Analyzer {
 
             edges.add(toAdd);
             filteredEdges.remove(toAdd);
+            for (Edge e : filteredEdges){
+                e.updateRatio(toAdd);
+            }
         }
         double reliability = computeReliability(model.getNumOfNodes(), edges);
         System.out.println("Maximum reliability: " + reliability);
@@ -184,6 +193,9 @@ public class Analyzer {
             edges.add(toAdd);
             filteredEdges.remove(toAdd);
             reliability = computeReliability(model.getNumOfNodes(), edges);
+            for (Edge e : filteredEdges){
+                e.updateRatio(toAdd);
+            }
         }
 
         reliability = computeReliability(model.getNumOfNodes(), edges);
