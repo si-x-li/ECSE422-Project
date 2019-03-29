@@ -1,11 +1,14 @@
 package com.ecse422.project.Model;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Model {
     private double[][] reliability;
     private int[][] cost;
     private int numOfNodes;
+    private Set<Edge> edges;
 
     /**
      * Constructor
@@ -15,6 +18,7 @@ public class Model {
      * @param numOfNodes  The number of nodes
      */
     public Model(double[] reliability, int[] cost, int numOfNodes) {
+        edges = new HashSet();
         int count = 0;
         this.reliability = new double[numOfNodes][numOfNodes];
         for (int i = 0; i < numOfNodes; i++) {
@@ -45,6 +49,21 @@ public class Model {
             }
         }
         this.numOfNodes = numOfNodes;
+
+        for (int i = 0; i < numOfNodes; i++) {
+            for (int j = i + 1; j < numOfNodes; j++) {
+                edges.add(new Edge(i, j, this.cost[i][j], this.reliability[i][j]));
+            }
+        }
+    }
+
+    /**
+     * Returns all possible edges.
+     *
+     * @return A set of edges
+     */
+    public Set<Edge> getAllEdges() {
+        return edges;
     }
 
     /**

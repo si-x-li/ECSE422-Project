@@ -5,6 +5,7 @@ public class Edge {
     private int destination;
     private int cost;
     private double reliability;
+    private double ratio;
 
     /**
      * Constructor
@@ -19,6 +20,7 @@ public class Edge {
         this.destination = destination;
         this.cost = cost;
         this.reliability = reliability;
+        this.ratio = reliability/cost;
     }
 
     /**
@@ -47,6 +49,19 @@ public class Edge {
      */
     public double getReliability() {
         return reliability;
+    }
+
+    public double getRatio(){
+        return ratio;
+    }
+
+    public void updateRatio(Edge e){
+        int newEdgeSrc = e.getSource();
+        int newEdgeDest = e.getDestination();
+        double newEdgeReliability = e.getReliability();
+        if (newEdgeSrc == source || newEdgeSrc == destination || newEdgeDest == source || newEdgeDest == destination){
+            ratio *= (1.0 - newEdgeReliability/1.19); // Random formula I figured, should works to a reasonable degree
+        }
     }
 
     /**
